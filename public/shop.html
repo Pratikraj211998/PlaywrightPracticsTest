@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Demo Shop</title>
+  <style>.form-card{margin:8px 0} .hidden{display:none}</style>
+</head>
+<body>
+<header>
+  <nav aria-label="Main">
+    <a href="/">Home</a>
+    <a href="#cart" title="Open cart">Cart (<span id="cart-count">0</span>)</a>
+  </nav>
+  <img alt="Company logo" width="40" height="40" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
+</header>
+
+<main>
+  <h1>Demo Shop</h1>
+
+  <h2>Login</h2>
+  <form id="login-form" class="form-card">
+    <label for="email">Email</label>
+    <input id="email" name="email" class="input" placeholder="you@example.com">
+
+    <label for="pwd">Password</label>
+    <input id="pwd" type="password" name="password" class="input" data-testid="password-input">
+
+    <label><input type="checkbox" name="remember"> Remember me</label>
+    <button id="login-btn" name="login" type="submit" class="btn btn-primary">Sign in</button>
+  </form>
+  <p id="msg" role="alert"></p>
+
+  <h2>Products</h2>
+  <label for="sort">Sort by</label>
+  <select id="sort"><option>Price</option><option>Name</option></select>
+  <ul id="products"></ul>
+
+  <h2>Orders</h2>
+  <table id="orders">
+    <thead><tr><th>Customer</th><th>Status</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td>John</td><td>Shipped</td><td><button class="delete">Delete</button></td></tr>
+      <tr><td>Priya</td><td>Pending</td><td><button class="delete">Delete</button></td></tr>
+      <tr><td>Alex</td><td>Pending</td><td><button class="delete" disabled>Delete</button></td></tr>
+    </tbody>
+  </table>
+</main>
+
+<script>
+  const msg = document.getElementById('msg');
+
+  document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('pwd').value;
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('name', data.name);
+      msg.textContent = 'Welcome, ' + email;
+    } else {
+      msg.textContent = 'Invalid credentials';
+    }
+  });
+
+  async function loadProducts() {
+    const list = document.getElementById('products');
+    try {
+      const res = await fetch('/api/products');
+      if (!res.ok) throw new Error('failed');
+      const items = await res.json();
+      list.innerHTML = '';
+      if (items.length === 0) { list.innerHTML = '<li>No products found</li>'; return; }
+      items.forEach((p) => {
+        const li = document.createElement('li');
+        li.className = 'product';
+        li.dataset.testid = 'product-' + p.id;
+        li.innerHTML = '<span class="name"></span> <span class="price"></span> <button>Add to cart</button>';
+        li.querySelector('.name').textContent = p.name;
+        li.querySelector('.price').textContent = '$' + p.price;
+        li.querySelector('button').addEventListener('click', () => {
+          const c = document.getElementById('cart-count');
+          c.textContent = Number(c.textContent) + 1;
+        });
+        list.appendChild(li);
+      });
+    } catch (err) {
+      list.innerHTML = '<li role="alert">Could not load products</li>';
+    }
+  }
+  loadProducts();
+
+  document.querySelectorAll('#orders .delete').forEach((b) => {
+    b.addEventListener('click', () => b.closest('tr').remove());
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Payment frame</title></head>
+<body>
+  <label for="card">Card number</label>
+  <input id="card" placeholder="4242 4242 4242 4242">
+  <button id="pay">Pay now</button>
+  <p id="paid"></p>
+  <script>
+    document.getElementById('pay').addEventListener('click', () => {
+      document.getElementById('paid').textContent = 'Paid with ' + document.getElementById('card').value;
+    });
+  </script>
+</body></html>

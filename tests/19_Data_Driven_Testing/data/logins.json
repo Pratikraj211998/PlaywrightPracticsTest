@@ -1,0 +1,5 @@
+[
+  { "title": "valid user", "email": "asha@example.com", "password": "secret", "expected": "Welcome, asha@example.com" },
+  { "title": "wrong password", "email": "asha@example.com", "password": "nope", "expected": "Invalid credentials" },
+  { "title": "another valid user", "email": "raj@example.com", "password": "secret", "expected": "Welcome, raj@example.com" }
+]

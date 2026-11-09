@@ -1,0 +1,27 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>AI chat demo</title></head>
+<body><h1>AI chat demo</h1>
+<div id="log" role="log" aria-label="Conversation"></div>
+<p id="status" role="status">Idle</p>
+<label for="msg">Message</label><input id="msg"><button id="send">Send</button>
+<button id="stop" disabled>Stop</button>
+<p>Was this helpful? <button id="up" aria-label="Thumbs up">Up</button><button id="down" aria-label="Thumbs down">Down</button> <span id="fb"></span></p>
+<script>
+const $ = (id) => document.getElementById(id); let controller;
+function add(who, text) { const d = document.createElement('div'); d.className = who; d.setAttribute('data-role', who); d.textContent = text; $('log').appendChild(d); return d; }
+$('send').addEventListener('click', async () => {
+  const q = $('msg').value.trim(); if (!q) return; add('user', q); $('msg').value = '';
+  const bot = add('assistant', ''); $('status').textContent = 'Typing...'; $('stop').disabled = false; $('send').disabled = true;
+  controller = new AbortController();
+  try {
+    const r = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: q }), signal: controller.signal });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const reader = r.body.getReader(); const dec = new TextDecoder();
+    for (;;) { const { done, value } = await reader.read(); if (done) break; bot.textContent += dec.decode(value, { stream: true }); }
+    $('status').textContent = 'Done';
+  } catch (e) { $('status').textContent = e.name === 'AbortError' ? 'Stopped' : 'Error: ' + e.message; }
+  $('stop').disabled = true; $('send').disabled = false;
+});
+$('stop').addEventListener('click', () => controller && controller.abort());
+$('up').addEventListener('click', () => $('fb').textContent = 'Thanks for the feedback: up');
+$('down').addEventListener('click', () => $('fb').textContent = 'Thanks for the feedback: down');
+</script></body></html>

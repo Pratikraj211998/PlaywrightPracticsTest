@@ -1,0 +1,26 @@
+// Jenkins (declarative pipeline). Needs Docker on the agent and the "JUnit" and "HTML Publisher" plugins.
+// Match the image tag to the Playwright version in package.json.
+pipeline {
+  agent { docker { image 'mcr.microsoft.com/playwright:v1.56.1-noble'; args '--ipc=host' } }
+  options { timeout(time: 45, unit: 'MINUTES'); timestamps() }
+  environment { CI = 'true'; TEST_ENV = 'qa' }
+  stages {
+    stage('Install') { steps { sh 'npm ci' } }
+    stage('Quality gates') { steps { sh 'npx tsc --noEmit && npx eslint .' } }
+    stage('Smoke tests') { steps { sh 'npx playwright test --grep @smoke' } }
+    stage('Regression (3 shards in parallel)') {
+      parallel {
+        stage('Shard 1') { steps { sh 'npx playwright test --shard=1/3 --reporter=blob' } }
+        stage('Shard 2') { steps { sh 'npx playwright test --shard=2/3 --reporter=blob' } }
+        stage('Shard 3') { steps { sh 'npx playwright test --shard=3/3 --reporter=blob' } }
+      }
+    }
+  }
+  post {
+    always {
+      junit allowEmptyResults: true, testResults: 'reports/junit.xml'
+      publishHTML(target: [reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright Report', keepAll: true, allowMissing: true])
+      archiveArtifacts artifacts: 'test-results/**, playwright-report/**', allowEmptyArchive: true
+    }
+  }
+}

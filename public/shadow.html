@@ -1,0 +1,24 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Shadow DOM</title></head>
+<body><h1>Shadow DOM</h1>
+<h2>Open shadow root with a nested shadow root</h2><user-card></user-card>
+<h2>Closed shadow root</h2><closed-widget></closed-widget>
+<h2>Slots (light DOM content shown inside a shadow)</h2>
+<card-slot><span slot="title" id="light-title">Title from light DOM</span><p>Body from light DOM</p></card-slot>
+<h2>Form inside shadow DOM</h2><login-shadow></login-shadow>
+<p id="page-out" role="status"></p>
+<script>
+class FancyButton extends HTMLElement { constructor(){ super(); const r = this.attachShadow({mode:'open'}); r.innerHTML = '<button id="fancy">Fancy button</button><span id="fancy-out"></span>'; r.getElementById('fancy').addEventListener('click', () => { r.getElementById('fancy-out').textContent = 'Fancy clicked'; }); } }
+customElements.define('fancy-button', FancyButton);
+class UserCard extends HTMLElement { constructor(){ super(); const r = this.attachShadow({mode:'open'});
+  r.innerHTML = '<label>Name <input id="uname"></label><button id="save">Save user</button><p id="saved"></p><fancy-button></fancy-button>';
+  r.getElementById('save').addEventListener('click', () => { r.getElementById('saved').textContent = 'Saved ' + r.getElementById('uname').value; }); } }
+customElements.define('user-card', UserCard);
+class ClosedWidget extends HTMLElement { constructor(){ super(); const r = this.attachShadow({mode:'closed'}); r.innerHTML = '<button>Closed button</button><span class="o"></span>'; r.querySelector('button').addEventListener('click', () => { r.querySelector('.o').textContent = 'Closed clicked'; }); } }
+customElements.define('closed-widget', ClosedWidget);
+class CardSlot extends HTMLElement { constructor(){ super(); const r = this.attachShadow({mode:'open'}); r.innerHTML = '<div style="border:1px solid #999"><h3><slot name="title"></slot></h3><div><slot></slot></div></div>'; } }
+customElements.define('card-slot', CardSlot);
+class LoginShadow extends HTMLElement { constructor(){ super(); const r = this.attachShadow({mode:'open'});
+  r.innerHTML = '<label for="u">User</label><input id="u"><label for="p">Pass</label><input id="p" type="password"><button id="go">Log in</button><p id="res" role="alert"></p>';
+  r.getElementById('go').addEventListener('click', () => { r.getElementById('res').textContent = r.getElementById('p').value === 'secret' ? 'Welcome ' + r.getElementById('u').value : 'Denied'; }); } }
+customElements.define('login-shadow', LoginShadow);
+</script></body></html>

@@ -1,0 +1,35 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Product filter</title>
+<style>.card{border:1px solid #999;margin:4px;padding:6px;display:inline-block;width:190px;vertical-align:top}.hidden{display:none}</style></head>
+<body><h1>Product filter</h1>
+<label for="search">Search</label> <input id="search" placeholder="name contains">
+<div role="group" aria-label="Category filter">
+  <button data-cat="all">All</button> <button data-cat="Phone">Phone</button> <button data-cat="Laptop">Laptop</button> <button data-cat="Audio">Audio</button>
+</div>
+<p id="count" role="status"></p>
+<div id="grid"></div>
+<p id="selected" role="status"></p>
+<script>
+const items = [
+ ['iPhone 15','Phone',999,4.7,true],['Galaxy S24','Phone',899,4.5,true],['Pixel 8','Phone',699,4.3,false],['Nokia 3310','Phone',59,3.9,true],
+ ['MacBook Air','Laptop',1199,4.8,true],['ThinkPad X1','Laptop',1399,4.6,false],['Dell XPS 13','Laptop',1099,4.4,true],['Chromebook','Laptop',299,3.8,true],
+ ['AirPods Pro','Audio',249,4.7,true],['Sony WH-1000XM5','Audio',399,4.9,true],['JBL Flip','Audio',129,4.2,false],['Earbuds Lite','Audio',29,3.5,true]];
+const grid = document.getElementById('grid');
+items.forEach(([name,cat,price,rating,stock]) => {
+  const a = document.createElement('article'); a.className = 'card'; a.dataset.category = cat;
+  a.innerHTML = `<h3 class="title"></h3><p class="cat"></p><p class="price"></p><p class="rating"></p><p class="stock"></p>
+    <label><input type="checkbox" class="pick"> Compare</label> <button class="add">Add to cart</button>`;
+  a.querySelector('.title').textContent = name; a.querySelector('.cat').textContent = cat;
+  a.querySelector('.price').textContent = '$' + price; a.querySelector('.rating').textContent = 'Rating: ' + rating;
+  a.querySelector('.stock').textContent = stock ? 'In stock' : 'Out of stock';
+  if (!stock) a.querySelector('.add').disabled = true;
+  a.querySelector('.pick').addEventListener('change', updSel);
+  grid.appendChild(a);
+});
+function updSel(){ const n = document.querySelectorAll('.pick:checked').length; document.getElementById('selected').textContent = n + ' selected'; }
+let cat = 'all';
+function apply(){ const q = document.getElementById('search').value.toLowerCase(); let n = 0;
+  document.querySelectorAll('.card').forEach((c) => { const show = (cat==='all'||c.dataset.category===cat) && c.querySelector('.title').textContent.toLowerCase().includes(q); c.classList.toggle('hidden', !show); if (show) n++; });
+  document.getElementById('count').textContent = n + ' products'; }
+document.querySelectorAll('[data-cat]').forEach((b) => b.addEventListener('click', () => { cat = b.dataset.cat; apply(); }));
+document.getElementById('search').addEventListener('input', apply); apply(); updSel();
+</script></body></html>

@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Extras</title>
+  <style>
+    #drag-item{display:inline-block;padding:8px;border:1px solid #333;background:#eef}
+    #drop-zone{width:160px;height:50px;border:2px dashed #999;margin-top:6px}
+    #feed{height:120px;overflow:auto;border:1px solid #999}
+    #cookie-banner{position:fixed;left:0;right:0;bottom:0;height:200px;background:#fff;border-top:2px solid #000;z-index:10;padding:12px}
+    #listbox{list-style:none;margin:0;padding:0}
+    @media print{ #no-print{display:none} }
+  </style>
+</head>
+<body>
+<h1>Extras</h1>
+
+<section aria-label="Drag and drop">
+  <h2>Drag and drop</h2>
+  <div id="drag-item" draggable="true">Drag me</div>
+  <div id="drop-zone" role="region" aria-label="Drop zone"></div>
+  <p id="drop-result"></p>
+</section>
+
+<section aria-label="Slider">
+  <h2>Slider</h2>
+  <label for="volume">Volume</label>
+  <input id="volume" type="range" min="0" max="10" value="5">
+  <output id="volume-out">5</output>
+</section>
+
+<section aria-label="Feed">
+  <h2>Infinite scroll</h2>
+  <div id="feed" role="feed" aria-label="News feed"></div>
+</section>
+
+<section aria-label="Tooltip and autocomplete">
+  <h2>Tooltip and autocomplete</h2>
+  <button id="info-btn" aria-describedby="tip">Info</button>
+  <div id="tip" role="tooltip" hidden>Extra help text</div>
+
+  <label for="country-input">Country</label>
+  <input id="country-input" role="combobox" aria-expanded="false" aria-controls="listbox" autocomplete="off">
+  <ul id="listbox" role="listbox" hidden></ul>
+  <p id="country-chosen"></p>
+</section>
+
+<section aria-label="Editor">
+  <h2>Rich text</h2>
+  <div id="editor" role="textbox" aria-label="Editor" contenteditable="true" style="border:1px solid #999;min-height:40px"></div>
+</section>
+
+<section aria-label="Diagnostics">
+  <h2>Console and errors</h2>
+  <button id="log-btn">Log error</button>
+  <button id="throw-btn">Throw error</button>
+</section>
+
+<section aria-label="Session">
+  <h2>Session timer</h2>
+  <p id="timer">Session expires in 1800 seconds</p>
+</section>
+
+<section aria-label="Realtime">
+  <h2>Realtime and clipboard</h2>
+  <button id="ws-btn">Connect</button>
+  <ul id="ws-log"></ul>
+  <button id="copy-btn">Copy code</button>
+  <button id="ping-btn">Ping</button> <span id="ping-result"></span>
+</section>
+
+<section aria-label="Checkout">
+  <h2>Checkout</h2>
+  <button id="checkout-btn">Checkout</button>
+  <p id="checkout-result"></p>
+</section>
+
+<p id="no-print">Not printed</p>
+<p>Printed text</p>
+
+<div id="cookie-banner" hidden role="dialog" aria-label="Cookie banner">
+  <p>We use cookies.</p>
+  <button id="accept-cookies">Accept cookies</button>
+</div>
+
+<script>
+  // drag and drop
+  const drop = document.getElementById('drop-zone');
+  document.getElementById('drag-item').addEventListener('dragstart', (e) => e.dataTransfer.setData('text/plain', 'item'));
+  drop.addEventListener('dragover', (e) => e.preventDefault());
+  drop.addEventListener('drop', (e) => { e.preventDefault(); document.getElementById('drop-result').textContent = 'Dropped!'; });
+
+  // slider
+  const vol = document.getElementById('volume');
+  vol.addEventListener('input', () => { document.getElementById('volume-out').textContent = vol.value; });
+
+  // infinite scroll
+  const feed = document.getElementById('feed');
+  let loaded = 0;
+  function more() {
+    for (let i = 0; i < 10 && loaded < 30; i++) {
+      loaded++;
+      const d = document.createElement('div');
+      d.setAttribute('role', 'article');
+      d.textContent = 'Post ' + loaded;
+      feed.appendChild(d);
+    }
+  }
+  more();
+  feed.addEventListener('scroll', () => {
+    if (feed.scrollTop + feed.clientHeight >= feed.scrollHeight - 5) more();
+  });
+
+  // tooltip
+  const infoBtn = document.getElementById('info-btn');
+  const tip = document.getElementById('tip');
+  infoBtn.addEventListener('mouseenter', () => { tip.hidden = false; });
+  infoBtn.addEventListener('mouseleave', () => { tip.hidden = true; });
+
+  // autocomplete
+  const countries = ['India', 'Indonesia', 'Ireland', 'Italy', 'Japan'];
+  const input = document.getElementById('country-input');
+  const lb = document.getElementById('listbox');
+  input.addEventListener('input', () => {
+    const q = input.value.toLowerCase();
+    lb.innerHTML = '';
+    const hits = q ? countries.filter((c) => c.toLowerCase().startsWith(q)) : [];
+    hits.forEach((c) => {
+      const li = document.createElement('li');
+      li.setAttribute('role', 'option');
+      li.textContent = c;
+      li.addEventListener('click', () => {
+        input.value = c;
+        lb.hidden = true;
+        document.getElementById('country-chosen').textContent = 'Chosen: ' + c;
+      });
+      lb.appendChild(li);
+    });
+    lb.hidden = hits.length === 0;
+  });
+
+  // diagnostics
+  document.getElementById('log-btn').addEventListener('click', () => console.error('Something broke'));
+  document.getElementById('throw-btn').addEventListener('click', () => setTimeout(() => { throw new Error('Boom'); }, 0));
+
+  // session timer
+  let secs = 1800;
+  const timer = document.getElementById('timer');
+  setInterval(() => {
+    secs--;
+    timer.textContent = secs > 0 ? 'Session expires in ' + secs + ' seconds' : 'Session expired';
+  }, 1000);
+
+  // websocket
+  document.getElementById('ws-btn').addEventListener('click', () => {
+    const ws = new WebSocket('ws://localhost:3000/ws');
+    ws.addEventListener('message', (e) => {
+      const li = document.createElement('li');
+      li.textContent = e.data;
+      document.getElementById('ws-log').appendChild(li);
+    });
+    ws.addEventListener('open', () => ws.send('hello'));
+  });
+
+  // clipboard
+  document.getElementById('copy-btn').addEventListener('click', () => navigator.clipboard.writeText('PW-1234'));
+
+  // online/offline
+  document.getElementById('ping-btn').addEventListener('click', async () => {
+    try { await fetch('/api/products'); document.getElementById('ping-result').textContent = 'Online'; }
+    catch { document.getElementById('ping-result').textContent = 'Offline'; }
+  });
+
+  // cookie banner that appears late and covers the checkout button
+  setTimeout(() => { document.getElementById('cookie-banner').hidden = false; }, 400);
+  document.getElementById('accept-cookies').addEventListener('click', () => { document.getElementById('cookie-banner').hidden = true; });
+  document.getElementById('checkout-btn').addEventListener('click', () => { document.getElementById('checkout-result').textContent = 'Checked out'; });
+</script>
+</body>
+</html>

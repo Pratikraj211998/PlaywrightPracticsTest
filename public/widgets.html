@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Widgets</title>
+  <style>
+    .submenu{display:none} .menu:hover .submenu{display:block}
+    #big-box{width:200px;height:60px;border:1px solid #333}
+  </style>
+</head>
+<body>
+<h1>Widgets</h1>
+
+<section aria-label="Form controls">
+  <h2>Form controls</h2>
+  <label for="fullname">Full name</label>
+  <input id="fullname" placeholder="Your name">
+
+  <fieldset>
+    <legend>Plan</legend>
+    <label><input type="radio" name="plan" value="free"> Free</label>
+    <label><input type="radio" name="plan" value="pro"> Pro</label>
+  </fieldset>
+
+  <label><input type="checkbox" id="terms"> I accept the terms</label>
+
+  <label for="country">Country</label>
+  <select id="country">
+    <option value="">Choose...</option>
+    <option value="in">India</option>
+    <option value="us">United States</option>
+    <option value="uk">United Kingdom</option>
+  </select>
+
+  <label for="dob">Date of birth</label>
+  <input id="dob" type="date">
+
+  <label for="search">Search</label>
+  <input id="search" placeholder="Type and press Enter">
+  <p id="search-result"></p>
+</section>
+
+<section aria-label="Mouse">
+  <h2>Mouse</h2>
+  <div class="menu">
+    <button id="menu-btn">Menu</button>
+    <div class="submenu"><a href="#settings">Settings</a></div>
+  </div>
+  <button id="dbl">Double click me</button> <span id="dbl-result"></span>
+  <div id="big-box" role="region" aria-label="Right click area">Right click here</div> <span id="ctx-result"></span>
+</section>
+
+<section aria-label="Dialogs">
+  <h2>Dialogs</h2>
+  <button id="alert-btn">Show alert</button>
+  <button id="confirm-btn">Show confirm</button>
+  <button id="prompt-btn">Show prompt</button>
+  <p id="dialog-result"></p>
+</section>
+
+<section aria-label="Windows">
+  <h2>Windows and frames</h2>
+  <a href="/popup.html" target="_blank">Open popup page</a>
+  <iframe id="pay-frame" src="/frame.html" title="Payment frame" width="320" height="140"></iframe>
+</section>
+
+<section aria-label="Files">
+  <h2>Files</h2>
+  <label for="file">Upload file</label>
+  <input id="file" type="file">
+  <p id="file-name"></p>
+  <a href="/download/report.txt" download>Download report</a>
+</section>
+
+<section aria-label="Dynamic">
+  <h2>Dynamic content</h2>
+  <button id="load-btn">Load data</button>
+  <p id="loaded" hidden>Data loaded</p>
+  <button id="location-btn">Get location</button> <span id="coords"></span>
+</section>
+
+<section aria-label="Components">
+  <h2>Shadow DOM and SVG</h2>
+  <my-widget></my-widget>
+  <svg width="120" height="60" role="img" aria-label="Status light">
+    <circle id="dot" cx="30" cy="30" r="20" fill="red"></circle>
+    <text x="60" y="35">Status</text>
+  </svg>
+</section>
+
+<script>
+  document.getElementById('search').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('search-result').textContent = 'Searched: ' + e.target.value;
+  });
+  document.getElementById('dbl').addEventListener('dblclick', () => {
+    document.getElementById('dbl-result').textContent = 'Double clicked';
+  });
+  document.getElementById('big-box').addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    document.getElementById('ctx-result').textContent = 'Context menu opened';
+  });
+
+  const result = document.getElementById('dialog-result');
+  document.getElementById('alert-btn').addEventListener('click', () => { alert('Hello from alert'); result.textContent = 'Alert closed'; });
+  document.getElementById('confirm-btn').addEventListener('click', () => { result.textContent = confirm('Delete this item?') ? 'Confirmed' : 'Cancelled'; });
+  document.getElementById('prompt-btn').addEventListener('click', () => { const n = prompt('Your name?'); result.textContent = n ? 'Hello, ' + n : 'No name'; });
+
+  document.getElementById('file').addEventListener('change', (e) => {
+    const f = e.target.files[0];
+    document.getElementById('file-name').textContent = f ? 'Selected: ' + f.name : '';
+  });
+
+  document.getElementById('load-btn').addEventListener('click', () => {
+    setTimeout(() => { document.getElementById('loaded').hidden = false; }, 1000);
+  });
+  document.getElementById('location-btn').addEventListener('click', () => {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => { document.getElementById('coords').textContent = pos.coords.latitude.toFixed(2) + ',' + pos.coords.longitude.toFixed(2); },
+      () => { document.getElementById('coords').textContent = 'Location denied'; }
+    );
+  });
+
+  class MyWidget extends HTMLElement {
+    constructor() {
+      super();
+      const root = this.attachShadow({ mode: 'open' });
+      root.innerHTML = '<button id="shadow-btn">Shadow Button</button><span id="shadow-out"></span>';
+      root.getElementById('shadow-btn').addEventListener('click', () => {
+        root.getElementById('shadow-out').textContent = 'Shadow clicked';
+      });
+    }
+  }
+  customElements.define('my-widget', MyWidget);
+
+  document.getElementById('dot').addEventListener('click', (e) => {
+    e.target.setAttribute('fill', 'green');
+  });
+</script>
+</body>
+</html>

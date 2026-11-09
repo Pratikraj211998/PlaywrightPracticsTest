@@ -1,0 +1,19 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>File download</title></head>
+<body><h1>File download</h1>
+<ul>
+ <li><a id="server-txt" href="/download/report.txt" download>Server text report</a></li>
+ <li><a id="server-csv" href="/download/data.csv">Server CSV (attachment header)</a></li>
+ <li><a id="slow" href="/download/slow.txt">Slow file (1.5 s)</a></li>
+ <li><button id="blob-csv">Export CSV (made in the browser)</button></li>
+ <li><button id="blob-json">Export JSON (made in the browser)</button></li>
+ <li><button id="new-tab">Download in a new tab</button></li>
+ <li><button id="two">Download two files</button></li>
+</ul>
+<p id="out" role="status"></p>
+<script>
+function save(name, text, type) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
+document.getElementById('blob-csv').addEventListener('click', () => save('export.csv', 'name,qty\nPen,3\nBook,5\n', 'text/csv'));
+document.getElementById('blob-json').addEventListener('click', () => save('export.json', JSON.stringify({ items: [1, 2, 3], ok: true }), 'application/json'));
+document.getElementById('new-tab').addEventListener('click', () => window.open('/download/data.csv', '_blank'));
+document.getElementById('two').addEventListener('click', () => { save('a.txt', 'file A', 'text/plain'); setTimeout(() => save('b.txt', 'file B', 'text/plain'), 200); });
+</script></body></html>

@@ -1,0 +1,13 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Frames</title></head>
+<body><h1>Frames and iframes</h1>
+<h2>Simple iframe</h2>
+<iframe id="simple" name="simple-frame" title="Simple frame" src="/frame.html" width="320" height="140"></iframe>
+<h2>Nested iframes</h2>
+<iframe id="outer" title="Outer frame" src="/frame-outer.html" width="420" height="260"></iframe>
+<h2>srcdoc iframe</h2>
+<iframe id="doc" title="Inline frame" srcdoc="<button id='inner-btn' onclick=&quot;document.getElementById('msg').textContent='Clicked inside srcdoc'&quot;>Press me</button><p id='msg'></p>" width="300" height="100"></iframe>
+<h2>Dynamic iframe</h2>
+<button id="add-frame">Add iframe</button><div id="holder"></div>
+<script>document.getElementById('add-frame').addEventListener('click', () => { setTimeout(() => { const f = document.createElement('iframe'); f.title = 'Late frame'; f.src = '/frame.html'; f.width = 320; f.height = 140; document.getElementById('holder').appendChild(f); }, 500); });</script>
+<p id="outer-text">Text outside all frames</p>
+</body></html>

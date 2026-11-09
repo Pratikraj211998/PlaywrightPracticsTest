@@ -1,0 +1,36 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Selects</title></head>
+<body><h1>Selects and dropdowns</h1>
+<label for="country">Country</label>
+<select id="country"><option value="">Choose...</option>
+  <optgroup label="Asia"><option value="in">India</option><option value="jp">Japan</option></optgroup>
+  <optgroup label="Europe"><option value="fr">France</option><option value="de">Germany</option></optgroup>
+  <option value="xx" disabled>Atlantis (disabled)</option></select>
+<p id="country-out" role="status"></p>
+
+<label for="skills">Skills (multi-select)</label>
+<select id="skills" multiple size="4"><option>Playwright</option><option>TypeScript</option><option>SQL</option><option>Docker</option></select>
+<p id="skills-out" role="status"></p>
+
+<label for="c2">Country (dependent)</label><select id="c2"><option value="">Choose...</option><option value="in">India</option><option value="us">USA</option></select>
+<label for="s2">State</label><select id="s2" disabled><option>Select a country first</option></select>
+
+<p><span id="lang-label">Language</span></p>
+<div id="lang"><button id="lang-btn" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="lang-label lang-btn">Choose language</button>
+  <ul role="listbox" aria-label="Languages" hidden><li role="option">English</li><li role="option">Hindi</li><li role="option">Tamil</li></ul></div>
+<p id="lang-out" role="status"></p>
+
+<label for="browser-input">Browser (datalist)</label>
+<input id="browser-input" list="browsers"><datalist id="browsers"><option value="Chrome"><option value="Firefox"><option value="Safari"></datalist>
+
+<label for="sorted">Sorted options</label>
+<select id="sorted"><option>Apple</option><option>Banana</option><option>Cherry</option><option>Mango</option></select>
+<script>
+const out = (id, t) => document.getElementById(id).textContent = t;
+country.addEventListener('change', () => out('country-out', 'Country: ' + country.value));
+skills.addEventListener('change', () => out('skills-out', 'Skills: ' + [...skills.selectedOptions].map((o) => o.value).join(',')));
+const states = { in: ['Kerala','Goa','Delhi'], us: ['Texas','Ohio'] };
+c2.addEventListener('change', () => { s2.innerHTML = ''; (states[c2.value] || []).forEach((s) => s2.add(new Option(s, s))); s2.disabled = !c2.value; if (!c2.value) s2.add(new Option('Select a country first')); });
+const btn = document.getElementById('lang-btn'), list = document.querySelector('#lang [role=listbox]');
+btn.addEventListener('click', () => { list.hidden = !list.hidden; btn.setAttribute('aria-expanded', String(!list.hidden)); });
+list.addEventListener('click', (e) => { if (e.target.role === 'option' || e.target.getAttribute('role') === 'option') { btn.textContent = e.target.textContent; list.hidden = true; out('lang-out', 'Language: ' + e.target.textContent); } });
+</script></body></html>

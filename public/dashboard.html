@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Dashboard</title></head>
+<body>
+  <h1>Dashboard</h1>
+  <p id="status">Checking login...</p>
+  <script>
+    const token = localStorage.getItem('token');
+    const status = document.getElementById('status');
+    if (!token) {
+      status.textContent = 'Please log in';
+    } else {
+      fetch('/api/me', { headers: { Authorization: 'Bearer ' + token } })
+        .then((r) => r.json())
+        .then((d) => { status.textContent = d.name ? 'Welcome back, ' + d.name : 'Please log in'; });
+    }
+  </script>
+</body></html>

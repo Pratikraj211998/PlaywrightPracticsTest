@@ -1,0 +1,22 @@
+# GitLab CI. "parallel: 3" starts three jobs; GitLab sets CI_NODE_INDEX and CI_NODE_TOTAL.
+image: mcr.microsoft.com/playwright:v1.56.1-noble
+
+stages: [test]
+
+playwright:
+  stage: test
+  parallel: 3
+  variables:
+    CI: 'true'
+  cache:
+    key: { files: [package-lock.json] }
+    paths: [node_modules/]
+  script:
+    - npm ci
+    - npx playwright test --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL
+  artifacts:
+    when: always
+    expire_in: 7 days
+    paths: [playwright-report/, test-results/]
+    reports:
+      junit: reports/junit.xml

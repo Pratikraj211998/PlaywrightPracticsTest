@@ -1,0 +1,25 @@
+# Azure DevOps. Three parallel jobs, each running one shard.
+trigger: { branches: { include: [main] } }
+pr: { branches: { include: [main] } }
+
+pool: { vmImage: ubuntu-latest }
+
+strategy:
+  parallel: 3        # creates 3 jobs; each one gets its own position number
+
+steps:
+  - task: NodeTool@0
+    inputs: { versionSpec: '20.x' }
+  - script: npm ci
+    displayName: Install dependencies
+  - script: npx playwright install --with-deps chromium
+    displayName: Install browsers
+  - script: npx playwright test --shard=$(System.JobPositionInPhase)/$(System.TotalJobsInPhase)
+    displayName: Run tests (one shard)
+    env: { CI: 'true' }
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs: { testResultsFormat: JUnit, testResultsFiles: 'reports/junit.xml', failTaskOnFailedTests: true }
+  - task: PublishPipelineArtifact@1
+    condition: succeededOrFailed()
+    inputs: { targetPath: playwright-report, artifact: 'playwright-report-$(System.JobPositionInPhase)', publishLocation: pipeline }

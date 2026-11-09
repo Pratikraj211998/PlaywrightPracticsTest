@@ -1,0 +1,21 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Browser storage</title></head>
+<body><h1>Browser storage</h1>
+<button id="set-cookie">Set cookie</button>
+<button id="set-local">Set localStorage</button>
+<button id="set-session">Set sessionStorage</button>
+<button id="set-idb">Save to IndexedDB</button>
+<button id="clear-all">Clear all</button>
+<label for="draft">Draft (kept in sessionStorage)</label><textarea id="draft"></textarea>
+<pre id="out" aria-label="Storage dump"></pre>
+<script>
+const out = document.getElementById('out');
+function dump() { out.textContent = JSON.stringify({ cookie: document.cookie, local: { ...localStorage }, session: { ...sessionStorage } }); }
+document.getElementById('set-cookie').addEventListener('click', () => { document.cookie = 'theme=dark; path=/'; dump(); });
+document.getElementById('set-local').addEventListener('click', () => { localStorage.setItem('token', 'abc123'); localStorage.setItem('lang', 'en'); dump(); });
+document.getElementById('set-session').addEventListener('click', () => { sessionStorage.setItem('cart', JSON.stringify(['pen', 'book'])); dump(); });
+document.getElementById('clear-all').addEventListener('click', () => { localStorage.clear(); sessionStorage.clear(); document.cookie = 'theme=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/'; dump(); });
+document.getElementById('draft').value = sessionStorage.getItem('draft') || '';
+document.getElementById('draft').addEventListener('input', (e) => { sessionStorage.setItem('draft', e.target.value); dump(); });
+document.getElementById('set-idb').addEventListener('click', () => { const r = indexedDB.open('appdb', 1); r.onupgradeneeded = () => r.result.createObjectStore('settings'); r.onsuccess = () => { const tx = r.result.transaction('settings', 'readwrite'); tx.objectStore('settings').put('hi', 'greeting'); tx.oncomplete = () => { out.dataset.idb = 'saved'; dump(); }; }; });
+dump();
+</script></body></html>

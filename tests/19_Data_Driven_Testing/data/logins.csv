@@ -1,0 +1,5 @@
+email,password,expected,run
+asha@example.com,secret,Welcome,yes
+asha@example.com,bad,Invalid credentials,yes
+meena@example.com,secret,Welcome,yes
+skipme@example.com,secret,Welcome,no

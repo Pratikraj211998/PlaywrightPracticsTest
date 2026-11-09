@@ -1,0 +1,30 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Scrolling</title>
+<style>
+#sticky-header{position:sticky;top:0;background:#223;color:#fff;padding:12px;z-index:5}
+section.block{height:700px;border-bottom:1px solid #ccc;padding:10px}
+#h-scroll{width:300px;overflow-x:auto;white-space:nowrap;border:1px solid #888}
+#h-scroll div{display:inline-block;width:150px;height:50px;border:1px solid #999}
+#panel{height:100px;overflow:auto;border:1px solid #888;width:300px}
+#panel p{margin:0;height:40px}
+.lazy{height:120px;border:1px dashed #999;margin:6px}
+#to-top{position:fixed;right:10px;bottom:10px;display:none}
+</style></head>
+<body>
+<div id="sticky-header">Sticky header (covers the top of the page)</div>
+<h1>Scrolling</h1>
+<section class="block" id="section-1"><h2>Section 1</h2><button id="first-btn">First button</button></section>
+<section class="block" id="section-2"><h2>Section 2</h2>
+  <div id="h-scroll"><div>Card 1</div><div>Card 2</div><div>Card 3</div><div>Card 4</div><div>Card 5</div><div id="far-card">Far card</div></div>
+  <div id="panel" tabindex="0" aria-label="Scrollable panel"><p>Row 1</p><p>Row 2</p><p>Row 3</p><p>Row 4</p><p>Row 5</p><p>Row 6</p><p>Row 7</p><p id="deep-row">Deep row</p></div>
+</section>
+<section class="block" id="section-3"><h2>Section 3: lazy content</h2><div class="lazy" id="lazy-1">Not loaded</div><div class="lazy" id="lazy-2">Not loaded</div></section>
+<section class="block" id="section-4"><h2>Section 4</h2></section>
+<footer id="footer"><h2>Footer</h2><button id="footer-btn">Footer button</button><p id="footer-out" role="status"></p></footer>
+<button id="to-top">Back to top</button>
+<script>
+document.getElementById('footer-btn').addEventListener('click', () => { document.getElementById('footer-out').textContent = 'Footer clicked'; });
+window.addEventListener('scroll', () => { document.getElementById('to-top').style.display = window.scrollY > 300 ? 'block' : 'none'; });
+document.getElementById('to-top').addEventListener('click', () => window.scrollTo(0, 0));
+const io = new IntersectionObserver((entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.textContent = 'Loaded ' + e.target.id; }), { threshold: 0.5 });
+document.querySelectorAll('.lazy').forEach((l) => io.observe(l));
+</script></body></html>

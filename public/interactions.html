@@ -1,0 +1,64 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Interactions</title>
+<style>
+.menu li{position:relative;list-style:none}.menu ul{display:none;position:absolute;left:100%;top:0;background:#eee;padding:0}.top>li>ul{left:0;top:100%}
+.menu li:hover>ul{display:block}.menu a{display:block;padding:4px 10px}
+#sortable{padding:0;width:200px}#sortable li{list-style:none;border:1px solid #666;padding:8px;margin:2px;background:#fff;user-select:none;cursor:grab}
+#ctx-menu{position:fixed;background:#fff;border:1px solid #333;display:none}#ctx-menu button{display:block}
+#multi-list li{list-style:none;padding:3px;user-select:none}#multi-list li.selected{background:#9cf}
+#bin{width:150px;height:50px;border:2px dashed #c00;margin-top:6px}
+</style></head>
+<body><h1>Keyboard, hover, drag and drop</h1>
+
+<h2>Keyboard</h2>
+<label for="keys">Type here</label> <input id="keys"> <p id="key-log" aria-live="polite"></p>
+
+<h2>Hover: multi-level menu</h2>
+<nav aria-label="Shop menu"><ul class="menu top"><li><a href="#">Products</a>
+  <ul class="menu"><li><a href="#">Laptops</a><ul class="menu"><li><a href="#" id="gaming">Gaming</a></li><li><a href="#">Office</a></li></ul></li><li><a href="#">Phones</a></li></ul></li></ul></nav>
+<p id="menu-out" role="status"></p>
+
+<h2>Sortable list (mouse events)</h2>
+<ul id="sortable" aria-label="Priorities"><li>Task A</li><li>Task B</li><li>Task C</li><li>Task D</li></ul>
+
+<h2>HTML5 drag and drop</h2>
+<div id="d1" draggable="true">Item 1</div><div id="d2" draggable="true">Item 2</div>
+<div id="bin" role="region" aria-label="Bin"></div><p id="bin-out" role="status"></p>
+
+<h2>Custom context menu</h2>
+<div id="ctx-area" style="border:1px solid #999;padding:20px;width:220px">Right click this area</div>
+<div id="ctx-menu" role="menu"><button role="menuitem" id="ctx-copy">Copy</button><button role="menuitem" id="ctx-delete">Delete</button></div>
+<p id="ctx-out" role="status"></p>
+
+<h2>Multi-select with Ctrl and Shift</h2>
+<ul id="multi-list"><li>One</li><li>Two</li><li>Three</li><li>Four</li><li>Five</li></ul><p id="multi-out" role="status"></p>
+
+<h2>Copy and paste</h2>
+<label for="src">Source</label><textarea id="src">Playwright</textarea> <label for="dst">Target</label><textarea id="dst"></textarea>
+
+<script>
+const klog = document.getElementById('key-log');
+keys.addEventListener('keydown', (e) => { const mods = ['Control','Shift','Alt','Meta'].filter((m) => e.getModifierState(m) && e.key !== m); klog.textContent = 'keydown: ' + [...mods, e.key].join('+'); });
+document.getElementById('gaming').addEventListener('click', (e) => { e.preventDefault(); document.getElementById('menu-out').textContent = 'Opened Gaming laptops'; });
+// sortable via mouse events
+const sortable = document.getElementById('sortable'); let dragging = null;
+sortable.addEventListener('mousedown', (e) => { if (e.target.tagName === 'LI') dragging = e.target; });
+document.addEventListener('mousemove', (e) => { if (!dragging) return; const el = document.elementFromPoint(e.clientX, e.clientY); if (el && el.tagName === 'LI' && el !== dragging && el.parentNode === sortable) { const r = el.getBoundingClientRect(); sortable.insertBefore(dragging, e.clientY < r.top + r.height / 2 ? el : el.nextSibling); } });
+document.addEventListener('mouseup', () => { dragging = null; });
+// html5 dnd
+document.querySelectorAll('[draggable]').forEach((d) => d.addEventListener('dragstart', (e) => e.dataTransfer.setData('text/plain', d.textContent)));
+bin.addEventListener('dragover', (e) => e.preventDefault());
+bin.addEventListener('drop', (e) => { e.preventDefault(); const t = e.dataTransfer.getData('text/plain'); bin.append(t + ' '); document.getElementById('bin-out').textContent = 'Dropped: ' + t; });
+// context menu
+const area = document.getElementById('ctx-area'), menu = document.getElementById('ctx-menu');
+area.addEventListener('contextmenu', (e) => { e.preventDefault(); menu.style.left = e.clientX + 'px'; menu.style.top = e.clientY + 'px'; menu.style.display = 'block'; });
+document.addEventListener('click', () => { menu.style.display = 'none'; });
+menu.addEventListener('click', (e) => { document.getElementById('ctx-out').textContent = 'Chose: ' + e.target.textContent; });
+// ctrl / shift selection
+const items = [...document.querySelectorAll('#multi-list li')]; let last = null;
+items.forEach((li, i) => li.addEventListener('click', (e) => {
+  if (e.shiftKey && last !== null) { const [a, b] = [Math.min(last, i), Math.max(last, i)]; items.forEach((x, k) => x.classList.toggle('selected', k >= a && k <= b)); }
+  else if (e.ctrlKey || e.metaKey) { li.classList.toggle('selected'); last = i; }
+  else { items.forEach((x) => x.classList.remove('selected')); li.classList.add('selected'); last = i; }
+  document.getElementById('multi-out').textContent = 'Selected: ' + items.filter((x) => x.classList.contains('selected')).map((x) => x.textContent).join(',');
+}));
+</script></body></html>

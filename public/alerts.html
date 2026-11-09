@@ -1,0 +1,19 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Alerts</title></head>
+<body><h1>JavaScript alerts and other pop-ups</h1>
+<button id="seq">Sequence of dialogs</button>
+<button id="late">Alert after 1 second</button>
+<button id="long">Alert with long text</button>
+<button id="modal-open">Open HTML modal</button>
+<button id="win">window.open popup</button>
+<a href="/beforeunload.html">Page that warns before leaving</a>
+<dialog id="modal" aria-label="Custom modal"><p>This is an HTML dialog, not a JavaScript alert.</p><button id="modal-close">Close modal</button></dialog>
+<p id="out" role="status"></p>
+<script>
+const o = (t) => document.getElementById('out').textContent = t;
+seq.addEventListener('click', () => { alert('Step 1 of 3'); alert('Step 2 of 3'); const ok = confirm('Finish?'); o(ok ? 'Finished' : 'Stopped'); });
+late.addEventListener('click', () => setTimeout(() => { alert('Delayed hello'); o('Delayed alert closed'); }, 1000));
+long.addEventListener('click', () => { alert('Line one\nLine two\nLine three'); o('Long alert closed'); });
+document.getElementById('modal-open').addEventListener('click', () => document.getElementById('modal').showModal());
+document.getElementById('modal-close').addEventListener('click', () => { document.getElementById('modal').close(); o('Modal closed'); });
+win.addEventListener('click', () => window.open('/popup.html', '_blank'));
+</script></body></html>

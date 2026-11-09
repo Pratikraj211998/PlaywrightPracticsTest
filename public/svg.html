@@ -1,0 +1,42 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>SVG</title></head>
+<body><h1>Working with SVG</h1>
+
+<h2>Clickable map regions</h2>
+<svg id="map" width="260" height="140" role="group" aria-label="Region map" xmlns="http://www.w3.org/2000/svg">
+  <rect id="north" class="region" x="10" y="5" width="240" height="40" fill="#8fd"><title>North</title></rect>
+  <rect id="south" class="region" x="10" y="50" width="110" height="80" fill="#fd8" aria-label="South"><title>South</title></rect>
+  <path id="east" class="region" d="M130 50 L250 50 L250 130 L130 130 Z" fill="#d8f" aria-label="East"><title>East</title></path>
+  <text x="20" y="30" class="map-label">North zone</text>
+</svg>
+<p id="map-out" role="status">Selected: none</p>
+
+<h2>Bar chart with tooltip</h2>
+<svg id="chart" width="260" height="150" role="img" aria-label="Sales chart" xmlns="http://www.w3.org/2000/svg">
+  <g class="bars">
+    <rect class="bar" data-value="30" data-label="Q1" x="20"  y="100" width="40" height="30" fill="#48f"/>
+    <rect class="bar" data-value="80" data-label="Q2" x="80"  y="50"  width="40" height="80" fill="#48f"/>
+    <rect class="bar" data-value="55" data-label="Q3" x="140" y="75"  width="40" height="55" fill="#48f"/>
+    <rect class="bar" data-value="95" data-label="Q4" x="200" y="35"  width="40" height="95" fill="#48f"/>
+  </g>
+  <text class="x-label" x="30" y="145">Q1</text><text class="x-label" x="90" y="145">Q2</text><text class="x-label" x="150" y="145">Q3</text><text class="x-label" x="210" y="145">Q4</text>
+  <text id="tip" x="100" y="15" visibility="hidden"></text>
+</svg>
+
+<h2>Icon buttons</h2>
+<button id="trash" aria-label="Delete item"><svg width="20" height="20" viewBox="0 0 20 20"><title>Trash icon</title><path d="M3 5h14l-1 12H4z" fill="#c00"/></svg></button>
+<button id="heart"><svg width="20" height="20" viewBox="0 0 20 20"><title>Like</title><circle cx="10" cy="10" r="8" fill="pink"/></svg></button>
+<p id="icon-out" role="status"></p>
+
+<h2>Star rating</h2>
+<svg id="stars" width="200" height="40" role="radiogroup" aria-label="Rating" xmlns="http://www.w3.org/2000/svg"></svg>
+<p id="rating-out" role="status">Rating: 0</p>
+<script>
+document.querySelectorAll('.region').forEach((r) => r.addEventListener('click', () => { document.getElementById('map-out').textContent = 'Selected: ' + r.id; }));
+const tip = document.getElementById('tip');
+document.querySelectorAll('.bar').forEach((b) => { b.addEventListener('mouseenter', () => { tip.textContent = b.dataset.label + ': ' + b.dataset.value; tip.setAttribute('visibility', 'visible'); }); b.addEventListener('mouseleave', () => tip.setAttribute('visibility', 'hidden')); });
+document.getElementById('trash').addEventListener('click', () => document.getElementById('icon-out').textContent = 'Deleted');
+document.getElementById('heart').addEventListener('click', () => document.getElementById('icon-out').textContent = 'Liked');
+const stars = document.getElementById('stars');
+for (let i = 1; i <= 5; i++) { const p = document.createElementNS('http://www.w3.org/2000/svg', 'polygon'); p.setAttribute('points', '10,1 4,19 19,7 1,7 16,19'); p.setAttribute('transform', `translate(${(i-1)*38},4)`); p.setAttribute('class', 'star'); p.setAttribute('fill', '#ccc'); p.setAttribute('data-rate', i); p.setAttribute('role', 'radio'); p.setAttribute('aria-label', i + ' star'); stars.appendChild(p);
+  p.addEventListener('click', () => { document.getElementById('rating-out').textContent = 'Rating: ' + i; stars.querySelectorAll('.star').forEach((s) => s.setAttribute('fill', Number(s.dataset.rate) <= i ? 'gold' : '#ccc')); }); }
+</script></body></html>

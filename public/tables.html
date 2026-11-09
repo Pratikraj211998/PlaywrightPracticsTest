@@ -1,0 +1,53 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Web tables</title>
+<style>table{border-collapse:collapse;margin:8px 0}td,th{border:1px solid #888;padding:3px 8px}th.sortable{cursor:pointer}</style></head>
+<body><h1>Web tables</h1>
+
+<h2>Employees (static)</h2>
+<table id="employees">
+  <caption>Employee list</caption>
+  <thead><tr><th><input type="checkbox" id="select-all" aria-label="Select all"></th><th>Name</th><th>Department</th><th>Salary</th><th>Status</th><th>Actions</th></tr></thead>
+  <tbody>
+    <tr><td><input type="checkbox" aria-label="Select Asha"></td><td>Asha</td><td>QA</td><td>90000</td><td>Active</td><td><button>Edit</button> <button>Delete</button></td></tr>
+    <tr><td><input type="checkbox" aria-label="Select Raj"></td><td>Raj</td><td>QA</td><td>70000</td><td>Inactive</td><td><button>Edit</button> <button>Delete</button></td></tr>
+    <tr><td><input type="checkbox" aria-label="Select Meena"></td><td>Meena</td><td>Dev</td><td>120000</td><td>Active</td><td><button>Edit</button> <button>Delete</button></td></tr>
+    <tr><td><input type="checkbox" aria-label="Select John"></td><td>John</td><td>Dev</td><td>110000</td><td>Active</td><td><button>Edit</button> <button>Delete</button></td></tr>
+    <tr><td><input type="checkbox" aria-label="Select Priya"></td><td>Priya</td><td>Dev</td><td>130000</td><td>Inactive</td><td><button>Edit</button> <button>Delete</button></td></tr>
+    <tr><td><input type="checkbox" aria-label="Select Sam"></td><td>Sam</td><td>Ops</td><td>50000</td><td>Active</td><td><button>Edit</button> <button>Delete</button></td></tr>
+  </tbody>
+  <tfoot><tr><td colspan="3">Total</td><td id="total-salary">570000</td><td colspan="2"></td></tr></tfoot>
+</table>
+<p id="action-result" role="status"></p>
+
+<h2>Orders (sortable, paginated, loaded from JavaScript)</h2>
+<table id="orders">
+  <thead><tr><th class="sortable" data-key="id" role="columnheader" tabindex="0">Order ID</th><th class="sortable" data-key="customer" role="columnheader" tabindex="0">Customer</th><th class="sortable" data-key="amount" role="columnheader" tabindex="0">Amount</th><th>Status</th></tr></thead>
+  <tbody></tbody>
+</table>
+<button id="prev">Previous</button> <span id="page-info">Page 1 of 1</span> <button id="next">Next</button>
+
+<h2>Grid made of divs (ARIA table)</h2>
+<div role="table" aria-label="Scores" id="div-table">
+  <div role="row"><span role="columnheader">Team</span><span role="columnheader">Points</span></div>
+  <div role="row"><span role="cell">Reds</span><span role="cell">42</span></div>
+  <div role="row"><span role="cell">Blues</span><span role="cell">37</span></div>
+</div>
+<script>
+document.querySelector('#employees tbody').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return; const row = b.closest('tr'); const name = row.children[1].textContent;
+  if (b.textContent === 'Delete') { row.remove(); document.getElementById('action-result').textContent = 'Deleted ' + name; }
+  else document.getElementById('action-result').textContent = 'Editing ' + name;
+});
+document.getElementById('select-all').addEventListener('change', (e) => document.querySelectorAll('#employees tbody input[type=checkbox]').forEach((c) => c.checked = e.target.checked));
+const orders = [[101,'Ann',250,'Paid'],[102,'Bob',80,'Refunded'],[103,'Cy',430,'Paid'],[104,'Dee',15,'Pending'],[105,'Eve',999,'Paid'],[106,'Fay',60,'Pending'],[107,'Gus',310,'Paid'],[108,'Hal',45,'Refunded'],[109,'Ivy',720,'Paid'],[110,'Jon',5,'Pending'],[111,'Kim',150,'Paid'],[112,'Lee',275,'Paid']].map(([id,customer,amount,status]) => ({id,customer,amount,status}));
+let page = 1, key = 'id', dir = 1; const size = 5;
+function render(){ const sorted = [...orders].sort((a,b) => (a[key] > b[key] ? 1 : a[key] < b[key] ? -1 : 0) * dir);
+  const pages = Math.ceil(sorted.length / size); const slice = sorted.slice((page-1)*size, page*size);
+  document.querySelector('#orders tbody').innerHTML = slice.map((o) => `<tr><td>${o.id}</td><td>${o.customer}</td><td>${o.amount}</td><td>${o.status}</td></tr>`).join('');
+  document.getElementById('page-info').textContent = `Page ${page} of ${pages}`;
+  document.getElementById('prev').disabled = page === 1; document.getElementById('next').disabled = page === pages;
+  document.querySelectorAll('#orders th.sortable').forEach((th) => th.setAttribute('aria-sort', th.dataset.key === key ? (dir === 1 ? 'ascending' : 'descending') : 'none')); }
+document.querySelectorAll('#orders th.sortable').forEach((th) => th.addEventListener('click', () => { if (key === th.dataset.key) dir = -dir; else { key = th.dataset.key; dir = 1; } page = 1; render(); }));
+document.getElementById('prev').addEventListener('click', () => { page--; render(); });
+document.getElementById('next').addEventListener('click', () => { page++; render(); });
+setTimeout(render, 300);   // rows arrive a little late, like a real app
+</script></body></html>

@@ -1,0 +1,1 @@
+{ "baseUser": "stage.user@example.com", "limits": { "maxItems": 10 }, "expectedProducts": 3 }

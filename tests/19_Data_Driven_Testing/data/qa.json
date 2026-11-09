@@ -1,0 +1,1 @@
+{ "baseUser": "qa.user@example.com", "limits": { "maxItems": 3 }, "expectedProducts": 3 }

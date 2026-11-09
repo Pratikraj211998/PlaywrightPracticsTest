@@ -1,0 +1,39 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>File upload</title>
+<style>#dropzone{border:2px dashed #777;padding:20px;width:300px;margin:6px 0}</style></head>
+<body><h1>File upload</h1>
+
+<h2>Single file (png or jpg only)</h2>
+<label for="single">Photo</label><input id="single" type="file" accept=".png,.jpg">
+<p id="single-out" role="status"></p>
+
+<h2>Multiple files</h2>
+<label for="multi">Documents</label><input id="multi" type="file" multiple>
+<ul id="multi-list"></ul><p id="multi-total" role="status"></p>
+
+<h2>Drop zone</h2>
+<div id="dropzone" role="button" tabindex="0" aria-label="Drop files here">Drop files here or click</div>
+<input id="hidden-input" type="file" multiple hidden>
+<p id="drop-out" role="status"></p>
+
+<h2>Folder upload</h2>
+<label for="folder">Folder</label><input id="folder" type="file" webkitdirectory>
+<p id="folder-out" role="status"></p>
+
+<h2>Upload to server</h2>
+<input id="server-file" type="file" aria-label="File to upload"><button id="send">Upload</button>
+<p id="send-out" role="status"></p>
+
+<script>
+const $ = (id) => document.getElementById(id);
+$('single').addEventListener('change', (e) => { const f = e.target.files[0]; if (!f) { $('single-out').textContent = ''; return; }
+  $('single-out').textContent = /\.(png|jpg)$/i.test(f.name) ? 'Selected: ' + f.name + ' (' + f.size + ' bytes)' : 'Error: only png or jpg allowed'; });
+$('multi').addEventListener('change', (e) => { const files = [...e.target.files]; $('multi-list').innerHTML = files.map((f) => '<li>' + f.name + '</li>').join(''); $('multi-total').textContent = files.length + ' files, ' + files.reduce((s, f) => s + f.size, 0) + ' bytes'; });
+const dz = $('dropzone'), hi = $('hidden-input');
+dz.addEventListener('click', () => hi.click());
+dz.addEventListener('dragover', (e) => e.preventDefault());
+dz.addEventListener('drop', (e) => { e.preventDefault(); $('drop-out').textContent = 'Dropped: ' + [...e.dataTransfer.files].map((f) => f.name).join(', '); });
+hi.addEventListener('change', () => { $('drop-out').textContent = 'Chosen: ' + [...hi.files].map((f) => f.name).join(', '); });
+$('folder').addEventListener('change', (e) => { $('folder-out').textContent = [...e.target.files].map((f) => f.webkitRelativePath).join(', '); });
+$('send').addEventListener('click', async () => { const f = $('server-file').files[0]; if (!f) { $('send-out').textContent = 'Choose a file first'; return; }
+  const fd = new FormData(); fd.append('file', f); const r = await fetch('/api/upload', { method: 'POST', body: fd }); const d = await r.json(); $('send-out').textContent = 'Uploaded, server received ' + d.receivedBytes + ' bytes'; });
+</script></body></html>
